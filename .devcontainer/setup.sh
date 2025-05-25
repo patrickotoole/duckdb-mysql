@@ -44,22 +44,38 @@ sudo apt-get install -y \
     clang-tidy \
     doxygen
 
-# Install vcpkg if not already present
-if [ ! -d "/usr/local/share/vcpkg" ]; then
+# Install vcpkg - improved detection logic
+echo "Setting up vcpkg..."
+VCPKG_DIR="/usr/local/share/vcpkg"
+
+# Check if vcpkg is properly installed (directory exists AND has git repo AND has vcpkg executable)
+if [ -d "$VCPKG_DIR" ] && [ -d "$VCPKG_DIR/.git" ] && [ -f "$VCPKG_DIR/vcpkg" ]; then
+    echo "vcpkg already installed, updating..."
+    cd "$VCPKG_DIR"
+    if git pull; then
+        echo "vcpkg updated successfully"
+    else
+        echo "Warning: Failed to update vcpkg, but continuing with existing installation"
+    fi
+else
     echo "Installing vcpkg..."
-    sudo git clone https://github.com/Microsoft/vcpkg.git /usr/local/share/vcpkg
-    sudo chown -R vscode:vscode /usr/local/share/vcpkg
-    cd /usr/local/share/vcpkg
+    # Remove any existing directory that might be incomplete
+    sudo rm -rf "$VCPKG_DIR"
+    
+    # Clone vcpkg
+    sudo git clone https://github.com/Microsoft/vcpkg.git "$VCPKG_DIR"
+    sudo chown -R vscode:vscode "$VCPKG_DIR"
+    
+    # Bootstrap vcpkg
+    cd "$VCPKG_DIR"
     ./bootstrap-vcpkg.sh
     
     # Make vcpkg available globally
     echo 'export VCPKG_ROOT=/usr/local/share/vcpkg' >> ~/.bashrc
     echo 'export VCPKG_TOOLCHAIN_PATH=/usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake' >> ~/.bashrc
     echo 'export PATH=$VCPKG_ROOT:$PATH' >> ~/.bashrc
-else
-    echo "vcpkg already installed, updating..."
-    cd /usr/local/share/vcpkg
-    git pull
+    
+    echo "vcpkg installed successfully"
 fi
 
 # Set up environment variables for current session
