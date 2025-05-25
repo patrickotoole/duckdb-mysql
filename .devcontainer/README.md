@@ -69,6 +69,8 @@ The MySQL server is automatically:
 - Configured with test databases: `mysqlscanner` and `mysql`
 - Available on port 3306 (forwarded from the container)
 
+**MySQL Setup Script**: The container includes a separate `setup-mysql.sh` script that handles MySQL configuration robustly for container environments.
+
 ## Volume Mounts
 
 A named volume `duckdb-mysql-vcpkg-cache` is mounted at `/usr/local/share/vcpkg` to persist vcpkg packages across container rebuilds, significantly speeding up subsequent container creation.
@@ -83,6 +85,11 @@ To modify the development environment:
 
 ## Troubleshooting
 
+### Container setup fails
+- Check the output logs for specific error messages
+- If MySQL setup fails, try running the MySQL setup manually: `bash .devcontainer/setup-mysql.sh`
+- Try rebuilding the container: Command Palette → "Dev Containers: Rebuild Container"
+
 ### Container fails to start
 - Check that Docker has sufficient resources allocated
 - Try rebuilding the container: Command Palette → "Dev Containers: Rebuild Container"
@@ -92,13 +99,33 @@ To modify the development environment:
 - Try cleaning the build: `make clean` then `make`
 
 ### MySQL connection issues
-- Check if MySQL is running: `sudo systemctl status mysql`
-- Restart MySQL: `sudo systemctl restart mysql`
-- Verify databases exist: `mysql -e "SHOW DATABASES;"`
+- Check if MySQL is running: `sudo service mysql status`
+- Restart MySQL: `sudo service mysql restart`
+- Run the MySQL setup script manually: `bash .devcontainer/setup-mysql.sh`
+- Verify databases exist: `mysql -u root -e "SHOW DATABASES;"`
+
+### systemd/systemctl errors in container
+- This is normal in container environments. The scripts use `service` commands instead
+- If you see systemd warnings, they can be safely ignored
 
 ### vcpkg issues
 - Check vcpkg installation: `vcpkg version`
 - Re-bootstrap vcpkg: `cd $VCPKG_ROOT && ./bootstrap-vcpkg.sh`
+
+## Manual MySQL Setup
+
+If MySQL setup fails during container creation, you can run it manually:
+
+```bash
+# Run the MySQL setup script
+bash .devcontainer/setup-mysql.sh
+
+# Or manually start MySQL and configure it
+sudo service mysql start
+mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '';"
+mysql -u root -e "FLUSH PRIVILEGES;"
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS mysqlscanner;"
+```
 
 ## Performance Tips
 

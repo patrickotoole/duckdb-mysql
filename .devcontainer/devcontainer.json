@@ -48,7 +48,7 @@
 
   "postCreateCommand": [
     "git submodule update --init --recursive",
-    "sudo service mysql start"
+    "bash .devcontainer/setup-mysql.sh || echo 'MySQL setup failed, but continuing...'"
   ],
 
   "forwardPorts": [3306],

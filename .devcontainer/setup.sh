@@ -35,18 +35,14 @@ sudo apt-get install -y \
     libmysqlclient-dev \
     default-libmysqlclient-dev
 
-# Configure MySQL for development/testing
-echo "Configuring MySQL..."
-sudo systemctl enable mysql
-sudo systemctl start mysql
-
-# Set up MySQL with no password for root (development environment)
-sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '';"
-sudo mysql -e "FLUSH PRIVILEGES;"
-
-# Create test database
-sudo mysql -e "CREATE DATABASE IF NOT EXISTS mysqlscanner;"
-sudo mysql -e "CREATE DATABASE IF NOT EXISTS mysql;"
+# Install additional development tools
+echo "Installing additional development tools..."
+sudo apt-get install -y \
+    gdb \
+    valgrind \
+    clang-format \
+    clang-tidy \
+    doxygen
 
 # Install vcpkg if not already present
 if [ ! -d "/usr/local/share/vcpkg" ]; then
@@ -71,14 +67,9 @@ export VCPKG_ROOT=/usr/local/share/vcpkg
 export VCPKG_TOOLCHAIN_PATH=/usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
 export PATH=$VCPKG_ROOT:$PATH
 
-# Install additional development tools
-echo "Installing additional development tools..."
-sudo apt-get install -y \
-    gdb \
-    valgrind \
-    clang-format \
-    clang-tidy \
-    doxygen
+# Set up MySQL (separate script for better error handling)
+echo "Setting up MySQL..."
+bash .devcontainer/setup-mysql.sh
 
 # Clean up
 sudo apt-get autoremove -y
@@ -92,5 +83,5 @@ echo ""
 echo "To run tests, run:"
 echo "  make test"
 echo ""
-echo "MySQL server is running on localhost:3306"
+echo "MySQL server should be running on localhost:3306"
 echo "Root user has no password (development setup)" 
