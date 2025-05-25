@@ -1,0 +1,71 @@
+{
+  "name": "DuckDB MySQL Extension",
+  "image": "mcr.microsoft.com/devcontainers/cpp:1-ubuntu-22.04",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true,
+      "username": "vscode",
+      "userUid": "automatic",
+      "userGid": "automatic"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+        "cmake.configureOnOpen": false,
+        "files.associations": {
+          "*.hpp": "cpp",
+          "*.cpp": "cpp",
+          "*.h": "c"
+        }
+      },
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.makefile-tools",
+        "github.vscode-github-actions",
+        "ms-vscode.vscode-json"
+      ]
+    }
+  },
+
+  "onCreateCommand": "bash .devcontainer/setup.sh",
+
+  "postCreateCommand": [
+    "git submodule update --init --recursive",
+    "sudo service mysql start"
+  ],
+
+  "forwardPorts": [3306],
+
+  "mounts": [
+    "source=duckdb-mysql-vcpkg-cache,target=/usr/local/share/vcpkg,type=volume"
+  ],
+
+  "containerEnv": {
+    "VCPKG_ROOT": "/usr/local/share/vcpkg",
+    "VCPKG_TOOLCHAIN_PATH": "/usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake",
+    "MYSQL_TEST_DATABASE_AVAILABLE": "1",
+    "MYSQL_HOST": "localhost",
+    "MYSQL_USER": "root",
+    "MYSQL_PWD": "",
+    "MYSQL_DATABASE": "mysqlscanner"
+  },
+
+  "remoteUser": "vscode"
+} 

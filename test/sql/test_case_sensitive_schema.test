@@ -1,0 +1,60 @@
+# name: test/sql/test_case_sensitive_schema.test
+# description: Test for case sensitivity issue with schema names in MySQL
+# group: [storage]
+
+require mysql_scanner
+
+require-env MYSQL_TEST_DATABASE_AVAILABLE
+
+statement ok
+ATTACH 'host=localhost user=root port=0 database=mysql' AS s (TYPE MYSQL_SCANNER)
+
+# Test that demonstrates the case sensitivity issue
+# Create a schema with specific case
+statement ok
+CREATE SCHEMA IF NOT EXISTS TestSchema
+
+# Create a table in that schema
+statement ok
+CREATE TABLE TestSchema.test_table(i INTEGER);
+
+statement ok
+INSERT INTO TestSchema.test_table VALUES (42);
+
+# This should work fine - exact case match
+query I
+SELECT * FROM TestSchema.test_table
+----
+42
+
+# This should also work due to case insensitive lookup in DuckDB
+# and case insensitive comparison in information_schema queries
+query I
+SELECT * FROM testschema.test_table
+----
+42
+
+# Test with mixed case as well
+query I
+SELECT * FROM TESTSCHEMA.test_table
+----
+42
+
+# Test that we can see the table in information_schema queries
+# regardless of the case used to reference the schema
+query I
+SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'TestSchema' AND table_name = 'test_table'
+----
+1
+
+query I
+SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'testschema' AND table_name = 'test_table'
+----
+1
+
+# Clean up
+statement ok
+DROP TABLE TestSchema.test_table
+
+statement ok
+DROP SCHEMA TestSchema 
