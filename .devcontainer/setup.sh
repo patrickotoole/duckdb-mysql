@@ -4,6 +4,9 @@ set -e
 
 echo "Setting up DuckDB MySQL Extension development environment..."
 
+# Save the workspace directory for later use
+WORKSPACE_DIR="$(pwd)"
+
 # Update package list
 sudo apt-get update
 
@@ -44,7 +47,7 @@ sudo apt-get install -y \
     clang-tidy \
     doxygen
 
-# Install vcpkg - handle volume mount correctly
+# Install vcpkg - improved detection logic
 echo "Setting up vcpkg..."
 VCPKG_DIR="/usr/local/share/vcpkg"
 
@@ -59,23 +62,15 @@ if [ -d "$VCPKG_DIR" ] && [ -d "$VCPKG_DIR/.git" ] && [ -f "$VCPKG_DIR/vcpkg" ];
     fi
 else
     echo "Installing vcpkg..."
+    # Remove any existing directory that might be incomplete
+    sudo rm -rf "$VCPKG_DIR"
     
-    # If directory exists but is incomplete (e.g., from volume mount), clear it
-    if [ -d "$VCPKG_DIR" ]; then
-        echo "Clearing existing vcpkg directory contents..."
-        sudo rm -rf "$VCPKG_DIR"/*
-        sudo rm -rf "$VCPKG_DIR"/.[!.]*  # Remove hidden files but not . and ..
-    fi
-    
-    # Ensure directory exists with correct permissions
-    sudo mkdir -p "$VCPKG_DIR"
+    # Clone vcpkg
+    sudo git clone https://github.com/Microsoft/vcpkg.git "$VCPKG_DIR"
     sudo chown -R vscode:vscode "$VCPKG_DIR"
     
-    # Clone vcpkg into the directory
-    cd "$VCPKG_DIR"
-    git clone https://github.com/Microsoft/vcpkg.git .
-    
     # Bootstrap vcpkg
+    cd "$VCPKG_DIR"
     ./bootstrap-vcpkg.sh
     
     # Make vcpkg available globally
@@ -86,14 +81,17 @@ else
     echo "vcpkg installed successfully"
 fi
 
+# Return to workspace directory
+cd "$WORKSPACE_DIR"
+
 # Set up environment variables for current session
 export VCPKG_ROOT=/usr/local/share/vcpkg
 export VCPKG_TOOLCHAIN_PATH=/usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
 export PATH=$VCPKG_ROOT:$PATH
 
-# Set up MySQL (separate script for better error handling)
+# Set up MySQL (using absolute path to script)
 echo "Setting up MySQL..."
-bash .devcontainer/setup-mysql.sh
+bash "$WORKSPACE_DIR/.devcontainer/setup-mysql.sh"
 
 # Clean up
 sudo apt-get autoremove -y
