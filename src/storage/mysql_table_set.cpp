@@ -49,7 +49,7 @@ void MySQLTableSet::LoadEntries(ClientContext &context) {
 	auto query = StringUtil::Replace(R"(
 SELECT table_name, column_name, data_type, column_type, column_default, is_nullable, numeric_precision, numeric_scale
 FROM information_schema.columns
-WHERE table_schema=${SCHEMA_NAME}
+WHERE table_schema COLLATE utf8_general_ci = ${SCHEMA_NAME}
 ORDER BY table_name, ordinal_position;
 )",
 	                                 "${SCHEMA_NAME}", MySQLUtils::WriteLiteral(schema.name));
@@ -83,7 +83,7 @@ string GetTableInfoQuery(const string &schema_name, const string &table_name) {
 	return StringUtil::Replace(StringUtil::Replace(R"(
 SELECT column_name, data_type, column_type, column_default, is_nullable, numeric_precision, numeric_scale
 FROM information_schema.columns
-WHERE table_schema=${SCHEMA_NAME} AND table_name=${TABLE_NAME}
+WHERE table_schema COLLATE utf8_general_ci = ${SCHEMA_NAME} AND table_name=${TABLE_NAME}
 ORDER BY table_name, ordinal_position;
 )",
 	                                               "${SCHEMA_NAME}", MySQLUtils::WriteLiteral(schema_name)),

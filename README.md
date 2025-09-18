@@ -185,7 +185,52 @@ CALL mysql_clear_cache();
 
 ## Development
 
-#### Dependencies
+### GitHub Codespaces / Dev Container
+
+The easiest way to get started with development is to use the provided GitHub Codespaces configuration or VS Code Dev Container. This provides a fully configured environment with all dependencies pre-installed.
+
+**To use GitHub Codespaces:**
+1. Click the "Code" button in the GitHub repository
+2. Select "Create codespace on main"
+3. Wait for the environment to set up (takes ~5 minutes)
+4. Run `make` to build the extension
+
+**To use VS Code Dev Container locally:**
+1. Install Docker and VS Code with the Dev Containers extension
+2. Open the repository in VS Code
+3. Click "Reopen in Container" when prompted
+4. Wait for setup to complete
+
+The dev container includes:
+- All build dependencies (CMake, Ninja, GCC, etc.)
+- vcpkg package manager with MySQL libraries
+- Local MySQL server for testing
+- Pre-configured environment variables
+
+See [`.devcontainer/README.md`](.devcontainer/README.md) for more details.
+
+#### Manual Setup
+
+If you prefer to set up the development environment manually:
+
+**Automated Setup (Linux/macOS):**
+
+For a quick automated setup on Linux or macOS, you can use the provided setup script:
+
+```bash
+./scripts/setup-dev-env.sh
+```
+
+This script will:
+- Detect your platform (Linux or macOS)
+- Install required dependencies using your package manager
+- Set up vcpkg
+- Initialize git submodules
+- Configure environment variables
+
+**Manual Dependencies:**
+
+##### Dependencies
 
 The package depends on `vcpkg`, and has several platform-specific dependencies that must be installed in order for compilation to succeed.
 

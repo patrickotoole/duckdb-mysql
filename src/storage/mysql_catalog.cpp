@@ -470,7 +470,7 @@ DatabaseSize MySQLCatalog::GetDatabaseSize(ClientContext &context) {
 	auto query = StringUtil::Replace(R"(
 SELECT SUM(data_length + index_length)
 FROM information_schema.tables
-WHERE table_schema = ${SCHEMA_NAME};
+WHERE table_schema COLLATE utf8_general_ci = ${SCHEMA_NAME};
 )",
 	                                 "${SCHEMA_NAME}", MySQLUtils::WriteLiteral(default_schema));
 	auto result = postgres_transaction.Query(query);
